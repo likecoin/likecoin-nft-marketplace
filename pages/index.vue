@@ -8,11 +8,11 @@
 </template>
 
 <script setup lang="ts">
-const router = useRouter()
+const router = useRouter();
 const classIdText = ref('');
 
 function onSearchClassId() {
-  router.push({ path: `/nft/${classIdText.value}` });
+  router.push({ path: `/listings/${classIdText.value}` });
 }
 
 </script>
