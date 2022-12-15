@@ -8,6 +8,12 @@
     "postinstall": "nuxt prepare"
   },
   "devDependencies": {
+    "cosmjs-types": "^0.6.0",
     "nuxt": "3.0.0"
+  },
+  "dependencies": {
+    "@cosmjs/stargate": "^0.29.5",
+    "@likecoin/iscn-js": "^0.5.2",
+    "@pinia/nuxt": "^0.4.6"
   }
 }
