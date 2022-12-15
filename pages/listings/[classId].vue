@@ -6,7 +6,10 @@
     <h2>Listings</h2>
     <ul>
         <li v-for="i in listing">
-            {{ i.nftId }} | {{ convertLongToNumber(i.price) }} | {{ i.expiration }}
+            <div>
+              <span>{{ i.nftId }} | {{ convertLongToNumber(i.price) }} | {{ i.expiration }}</span>
+              <button @click="buyNFT(i)">Buy</button>
+            </div>
         </li>
     </ul>
   </div>
@@ -14,9 +17,14 @@
 
 <script setup lang="ts">
 import Long from 'long';
+import BigNumber from 'bignumber.js';
+import { storeToRefs } from 'pinia';
+import { useWalletStore } from '~/stores/wallet';
 import { queryNFTClass, queryListingByNFTClassId } from '../../utils/cosmos';
 
 const route = useRoute();
+const store = useWalletStore();
+const { wallet, signer } = storeToRefs(store);
 const listing = ref();
 const metadata = ref({} as any);
 
@@ -26,7 +34,27 @@ onMounted(async () => {
   listing.value = await queryListingByNFTClassId(classId.value);
 })
 
+const { connect } = store;
 function convertLongToNumber(number: any) {
-  return Long.fromValue(number).toString()
+  return new BigNumber(number).shiftedBy(-9).toFixed();
+}
+async function buyNFT({
+  classId,
+  nftId,
+  seller,
+  price,
+}: {
+  classId: string,
+  nftId: string,
+  seller: string,
+  price: any,
+}) {
+  if (!wallet.value || !signer.value) {
+    await connect();
+  }
+  if (!wallet.value || !signer.value) return;
+  const p = new BigNumber(price).shiftedBy(-9).toNumber();
+  const res = await signBuyNFT(classId, nftId, seller, p, signer.value, wallet.value);
+  console.log(res);
 }
 </script>
