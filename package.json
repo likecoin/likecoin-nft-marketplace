@@ -15,6 +15,7 @@
   "dependencies": {
     "@cosmjs/stargate": "^0.29.5",
     "@likecoin/iscn-js": "^0.5.2",
-    "@pinia/nuxt": "^0.4.6"
+    "@pinia/nuxt": "^0.4.6",
+    "bignumber.js": "^9.1.1"
   }
 }

@@ -14,7 +14,7 @@ declare global {
   interface Window extends KeplrWindow {}
 }
 
-export const useWalletStore = defineStore("counter", () => {
+export const useWalletStore = defineStore("wallet", () => {
   const accounts = ref([] as readonly AccountData[]);
   const signer = ref(null as (OfflineAminoSigner & OfflineDirectSigner | null));
 
