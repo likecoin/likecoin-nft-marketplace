@@ -5,6 +5,7 @@
     <p>{{ metadata.description }}</p>
     <h2>Listings</h2>
     <ul>
+        <div v-if="!listing.length">No one is selling this NFT yet</div>
         <li v-for="i in listing">
             <div>
               <span>{{ i.nftId }} | {{ convertLongToNumber(i.price) }} | {{ i.expiration }}</span>
@@ -16,7 +17,6 @@
 </template>
 
 <script setup lang="ts">
-import Long from 'long';
 import BigNumber from 'bignumber.js';
 import { storeToRefs } from 'pinia';
 import { useWalletStore } from '~/stores/wallet';
@@ -25,7 +25,7 @@ import { queryNFTClass, queryListingByNFTClassId } from '../../utils/cosmos';
 const route = useRoute();
 const store = useWalletStore();
 const { wallet, signer } = storeToRefs(store);
-const listing = ref();
+const listing = ref([] as any[]);
 const metadata = ref({} as any);
 
 const classId = computed(() => route.params.classId as string);
