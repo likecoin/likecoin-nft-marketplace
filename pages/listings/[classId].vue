@@ -1,14 +1,17 @@
 <template>
   <div>
     <h1>{{ metadata.name }}</h1>
-    <h3>{{ classId }}</h3>
+    <h3><NftLink :class-id="classId" /></h3>
     <p>{{ metadata.description }}</p>
     <h2>Listings</h2>
     <ul>
         <div v-if="!listing.length">No one is selling this NFT yet</div>
         <li v-for="i in listing">
             <div>
-              <span>{{ i.nftId }} | {{ convertLongToNumber(i.price) }} | {{ i.expiration }}</span>
+              <NftLink :class-id="classId" :nft-id="i.nftId"/>
+              <span> | {{ convertLongToNumber(i.price) }} LIKE | </span>
+              <UserLink :wallet="i.seller" />
+              <span> | {{ i.expiration }}</span>
               <button @click="buyNFT(i)">Buy</button>
             </div>
         </li>

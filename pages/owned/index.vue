@@ -7,7 +7,9 @@
         <div v-if="!ownedList.length">You don't own any NFT on LikeCoin chain</div>
         <li v-for="i in ownedList">
           <div>
-            <span>{{ i.classId }} | {{ i.id }} | {{ i.data.metadata.name }}</span>
+            <NftLink :class-id="i.classId" />
+             | <NftLink :class-id="i.classId" :nft-id="i.id" />
+             | {{ i.data.metadata.name }}
             <button @click="viewClassListings(i.classId)">View Listing</button>
             <button @click="newNFTListing(i.classId, i.id)">Sell</button>
           </div>
