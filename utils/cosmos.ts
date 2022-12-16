@@ -63,6 +63,12 @@ export async function queryNFTClass(classId: string) {
   return res?.class;
 }
 
+export async function queryNFT(classId: string, nftId: string) {
+  const c = await getQueryClient();
+  const res = await c.queryNFT(classId, nftId);
+  return res?.nft;
+}
+
 export async function signBuyNFT(
   classId: string,
   nftId: string,
@@ -74,5 +80,19 @@ export async function signBuyNFT(
   const signingClient = await getSigningClient();
   await signingClient.connectWithSigner(RPC_URL, signer);
   const res = await signingClient.buyNFT(address, classId, nftId, seller, price);
+  return res as DeliverTxResponse;
+}
+
+export async function signCreateNFTListing(
+  classId: string,
+  nftId: string,
+  price: number,
+  expirationInMs: number,
+  signer: OfflineSigner,
+  address: string,
+) {
+  const signingClient = await getSigningClient();
+  await signingClient.connectWithSigner(RPC_URL, signer);
+  const res = await signingClient.createNFTListing(address, classId, nftId, price, expirationInMs)
   return res as DeliverTxResponse;
 }
