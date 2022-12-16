@@ -22,6 +22,7 @@ import { storeToRefs } from 'pinia';
 import { useWalletStore } from '~/stores/wallet';
 import { queryNFTClass, queryListingByNFTClassId } from '../../utils/cosmos';
 
+const router = useRouter();
 const route = useRoute();
 const store = useWalletStore();
 const { wallet, signer } = storeToRefs(store);
@@ -56,5 +57,6 @@ async function buyNFT({
   const p = new BigNumber(price).shiftedBy(-9).toNumber();
   const res = await signBuyNFT(classId, nftId, seller, p, signer.value, wallet.value);
   console.log(res);
+  router.push({ path: '/owned' });
 }
 </script>
