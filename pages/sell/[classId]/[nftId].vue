@@ -14,8 +14,10 @@
           <td>
             <div>
               <h4>{{ nftData?.data?.metadata.name }}</h4>
-              Class ID: <NftLink :class-id="classId" /><br />
-              NFT ID: <NftLink :class-id="classId" :nft-id="nftId" />
+              Class ID:
+              <NftLink :class-id="classId" /><br />
+              NFT ID:
+              <NftLink :class-id="classId" :nft-id="nftId" />
             </div>
             <button @click="viewClassListings(classId)">View current listing for class</button>
           </td>

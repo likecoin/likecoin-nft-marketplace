@@ -12,9 +12,8 @@
   </div>
 </template>
 <style>
-
 h1 {
-    display: inline-block;
+  display: inline-block;
 }
 
 table,

@@ -21,8 +21,10 @@
             <td>#{{ i + 1 }}</td>
             <td>
               <div>
-                NFT ID: <NftLink :class-id="item.classId" :nft-id="item.nftId" /><br />
-                Sold by: <UserLink :wallet="item.seller" />
+                NFT ID:
+                <NftLink :class-id="item.classId" :nft-id="item.nftId" /><br />
+                Sold by:
+                <UserLink :wallet="item.seller" />
               </div>
             </td>
             <td>
