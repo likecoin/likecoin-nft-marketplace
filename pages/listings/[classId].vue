@@ -1,21 +1,41 @@
 <template>
   <div>
     <h1>{{ metadata.name }}</h1>
-    <h3><NftLink :class-id="classId" /></h3>
     <p>{{ metadata.description }}</p>
+    <div>Class ID:
+      <NftLink :class-id="classId" />
+    </div>
     <h2>Listings</h2>
-    <ul>
-        <div v-if="!listing.length">No one is selling this NFT yet</div>
-        <li v-for="i in listing">
-            <div>
-              <NftLink :class-id="classId" :nft-id="i.nftId"/>
-              <span> | {{ convertLongToNumber(i.price) }} LIKE | </span>
-              <UserLink :wallet="i.seller" />
-              <span> | {{ i.expiration }}</span>
-              <button @click="buyNFT(i)">Buy</button>
-            </div>
-        </li>
-    </ul>
+    <section>
+      <div v-if="!listing.length">No one is selling this NFT yet</div>
+      <table v-else>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>NFT information</th>
+            <th>Listing Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item, i in listing">
+            <td>#{{ i + 1 }}</td>
+            <td>
+              <div>
+                NFT ID: <NftLink :class-id="item.classId" :nft-id="item.nftId" /><br />
+                Sold by: <UserLink :wallet="item.seller" />
+              </div>
+            </td>
+            <td>
+              <section>
+                <div>{{ convertLongToNumber(item.price) }} LIKE</div>
+                <div>till {{ item.expiration }}</div>
+              </section>
+              <button @click="buyNFT(item)">Buy</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
   </div>
 </template>
 
@@ -63,3 +83,12 @@ async function buyNFT({
   router.push({ path: '/owned' });
 }
 </script>
+
+<style scoped>
+table,
+td,
+th {
+  border-collapse: collapse;
+  border: 1px solid;
+}
+</style>
