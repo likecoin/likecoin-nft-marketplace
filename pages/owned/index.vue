@@ -3,22 +3,24 @@
     <h2>View my NFTs</h2>
     <div v-if="!wallet">Please connect wallet</div>
     <section v-else>
-        <div v-if="!ownedList.length">You don't own any NFT on LikeCoin chain</div>
-        <table v-else>
+      <div v-if="!ownedList.length">You don't own any NFT on LikeCoin chain</div>
+      <table v-else>
         <thead>
-            <tr>
-                <th>#</th>
-                <th>NFT information</th>
-                <th>Your Listing</th>
-            </tr>
+          <tr>
+            <th>#</th>
+            <th>NFT information</th>
+            <th>Your Listing</th>
+          </tr>
         </thead>
         <tbody>
           <tr v-for="item, i in ownedList">
-            <td>#{{i + 1}}</td>
+            <td>#{{ i + 1 }}</td>
             <td>
-              <h4>{{item.data.metadata.name}}</h4>
-              Class ID: <NftLink :class-id="item.classId" /><br />
-              NFT ID: <NftLink :class-id="item.classId" :nft-id="item.id" /><br />
+              <h4>{{ item.data.metadata.name }}</h4>
+              Class ID:
+              <NftLink :class-id="item.classId" /><br />
+              NFT ID:
+              <NftLink :class-id="item.classId" :nft-id="item.id" /><br />
               <button @click="viewClassListings(item.classId)">View NFT Class Listing</button>
             </td>
             <td>

@@ -1,12 +1,12 @@
 <template>
-    <div>
-      <section>
-        <h2>Search NFT</h2>
-        <form @submit.prevent="onSearchClassId">
-          <input v-model="classIdText" placeholder="Search NFT by Class">
-          <input type="submit" value="Search" />
-        </form>
-      </section>
+  <div>
+    <section>
+      <h2>Search NFT</h2>
+      <form @submit.prevent="onSearchClassId">
+        <input v-model="classIdText" placeholder="Search NFT by Class">
+        <input type="submit" value="Search" />
+      </form>
+    </section>
   </div>
 </template>
 
