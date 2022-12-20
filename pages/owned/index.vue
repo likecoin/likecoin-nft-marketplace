@@ -71,10 +71,3 @@ async function newNFTListing(classId: string, nftId: string) {
   router.push({ path: `/sell/${classId}/${nftId}` });
 }
 </script>
-
-<style scoped>
-table, td, th {
-  border-collapse: collapse;
-  border: 1px solid;
-}
-</style>

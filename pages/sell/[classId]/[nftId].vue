@@ -75,12 +75,3 @@ async function createNFTListing() {
   viewClassListings(classId.value);
 }
 </script>
-
-<style scoped>
-table,
-td,
-th {
-  border-collapse: collapse;
-  border: 1px solid;
-}
-</style>

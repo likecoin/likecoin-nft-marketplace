@@ -83,12 +83,3 @@ async function buyNFT({
   router.push({ path: '/owned' });
 }
 </script>
-
-<style scoped>
-table,
-td,
-th {
-  border-collapse: collapse;
-  border: 1px solid;
-}
-</style>
