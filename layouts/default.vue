@@ -11,9 +11,16 @@
     <slot />
   </div>
 </template>
-<style scoped>
+<style>
 
 h1 {
     display: inline-block;
+}
+
+table,
+td,
+th {
+  border-collapse: collapse;
+  border: 1px solid;
 }
 </style>
