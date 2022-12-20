@@ -1,8 +1,8 @@
 <template>
-  <header>
-    <div v-if="wallet">{{ wallet }}</div>
+  <div style="padding: 20px;">
+    <span v-if="wallet">{{ wallet }}</span>
     <button v-if="!wallet" @click="connect">Connect</button>
-  </header>
+  </div>
 </template>
 
 <script setup lang="ts">

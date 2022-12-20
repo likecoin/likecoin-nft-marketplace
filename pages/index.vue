@@ -1,16 +1,5 @@
 <template>
   <div>
-    <section>
-      <h2>Search NFT Class</h2>
-      <form @submit.prevent="onSearchClassId">
-        <input v-model="classIdText" placeholder="Search NFT Class ID">
-        <input type="submit" value="Search" />
-      </form>
-    </section>
-    <section>
-      <h2>View and Sell NFT</h2>
-      <button @click="onViewOwned">View my NFTs</button>
-    </section>
     <section v-if="listingEvents.length">
       <h2>Recent NFT Listings</h2>
       <ul>
@@ -34,9 +23,6 @@
 <script setup lang="ts">
 import BigNumber from 'bignumber.js';
 
-const router = useRouter();
-const classIdText = ref('');
-
 const listingEvents = ref([] as any[]);
 const buyNFTEvents = ref([] as any[]);
 
@@ -46,13 +32,5 @@ onMounted(async () => {
     getRecentBuyNFTEvents(),
   ]);
 })
-
-function onSearchClassId() {
-  router.push({ path: `/listings/${classIdText.value}` });
-}
-
-function onViewOwned() {
-  router.push({ path: '/owned' });
-}
 
 </script>
