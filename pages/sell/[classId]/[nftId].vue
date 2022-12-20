@@ -1,26 +1,36 @@
 <template>
   <div>
-    <h1>{{ classData.name }}</h1>
-    <h3><NftLink :class-id="classId" /></h3>
-    <p>{{ classData.description }}</p>
-    <div>
-      <button @click="viewClassListings(classId)">View current listing for class</button>
-    </div>
-    <h2>List NFT for sell</h2>
-    <h3>NFT Data</h3>
-    <div>NFT ID: <NftLink :class-id="classId" :nft-id="nftId" /></div>
-    <div>Name: {{ nftData?.data?.metadata.name }}</div>
-    <div>Description: {{ nftData?.data?.metadata.description }}</div>
-    <div>Image: {{ nftData?.data?.metadata.image }}</div>
-    <h3>Create new Sell Listing</h3>
+    <h1>List NFT for sell</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>NFT information</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>#0</td>
+          <td>
+            <div>
+              <h4>{{ nftData?.data?.metadata.name }}</h4>
+              Class ID: <NftLink :class-id="classId" /><br />
+              NFT ID: <NftLink :class-id="classId" :nft-id="nftId" />
+            </div>
+            <button @click="viewClassListings(classId)">View current listing for class</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
     <form @submit.prevent="createNFTListing">
       <label for="listing-price">Price:</label>
-      <input type="number" id="listing-price" v-model="listingPrice"/> LIKE
+      <input type="number" id="listing-price" v-model="listingPrice" /> LIKE
       <br />
       <label for="listing-expiration">Offer expiration:</label>
-      <input type="date" id="listing-expiration" v-model="listingExpiration" :max="maxExpirationValue" :min="minExpirationValue"/>
+      <input type="date" id="listing-expiration" v-model="listingExpiration" :max="maxExpirationValue"
+        :min="minExpirationValue" />
       <br />
-      <input type="submit" value="Confirm"/>
+      <input type="submit" value="Confirm" />
     </form>
   </div>
 </template>
@@ -65,3 +75,12 @@ async function createNFTListing() {
   viewClassListings(classId.value);
 }
 </script>
+
+<style scoped>
+table,
+td,
+th {
+  border-collapse: collapse;
+  border: 1px solid;
+}
+</style>
