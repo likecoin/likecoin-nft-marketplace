@@ -1,6 +1,10 @@
 <template>
   <div style="padding: 20px;">
-    <span v-if="wallet">{{ wallet }}</span>
+    <span v-if="wallet">
+      <span>{{ wallet }}</span> &nbsp;
+      <NuxtLink :to="'/owned'">View my NFT</NuxtLink> &nbsp;
+      <button @click="disconnect">Logout</button>
+    </span>
     <button v-if="!wallet" @click="connect">Connect</button>
   </div>
 </template>
@@ -11,5 +15,5 @@ import { useWalletStore } from '~/stores/wallet';
 
 const store = useWalletStore();
 const { wallet } = storeToRefs(store);
-const { connect } = store;
+const { connect, disconnect } = store;
 </script>
