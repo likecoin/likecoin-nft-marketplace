@@ -1,15 +1,15 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { OfflineSigner } from "@cosmjs/proto-signing";
 import {
-  ISCNSignPayload,
   ISCNSigningClient,
   ISCNQueryClient,
 } from "@likecoin/iscn-js";
+import axios from 'axios';
 import { BankExtension, DeliverTxResponse, QueryClient } from "@cosmjs/stargate";
-import { RPC_URL } from "~~/constant";
+import { RPC_URL, LCD_URL } from "~~/constant";
 import { ISCNExtension, NFTExtension, LikeNFTExtension } from "@likecoin/iscn-js/dist/queryExtensions";
 import { AuthzExtension } from "@cosmjs/stargate/build/modules/authz/queries";
-import { PageRequest, PageResponse } from "cosmjs-types/cosmos/base/query/v1beta1/pagination";
+import { PageRequest } from "cosmjs-types/cosmos/base/query/v1beta1/pagination";
 
 let client: ISCNSigningClient | null = null;
 
@@ -95,4 +95,16 @@ export async function signCreateNFTListing(
   await signingClient.connectWithSigner(RPC_URL, signer);
   const res = await signingClient.createNFTListing(address, classId, nftId, price, expirationInMs)
   return res as DeliverTxResponse;
+}
+
+export async function getRecentListingEvents() {
+  const { data } = await axios.get(`${LCD_URL}/cosmos/tx/v1beta1/txs?events=message.action%3D%27create_listing%27&pagination.limit=100&order_by=ORDER_BY_DESC`)
+  const events = data.tx_responses.filter((t: any) => !t.code).map((t: any) => t.tx.body.messages.find((m: any) => m['@type']  === '/likechain.likenft.v1.MsgCreateListing') )
+  return events;
+}
+
+export async function getRecentBuyNFTEvents() {
+  const { data } = await axios.get(`${LCD_URL}/cosmos/tx/v1beta1/txs?events=message.action%3D%27buy_nft%27&pagination.limit=100&order_by=ORDER_BY_DESC`);
+  const events = data.tx_responses.filter((t: any) => !t.code).map((t: any) => t.tx.body.messages.find((m: any) => m['@type']  === '/likechain.likenft.v1.MsgBuyNFT') )
+  return events;
 }
