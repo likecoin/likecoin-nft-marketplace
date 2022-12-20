@@ -1,20 +1,32 @@
 <template>
   <div>
-    <h2>Owned NFTs</h2>
+    <h2>View my NFTs</h2>
     <div v-if="!wallet">Please connect wallet</div>
     <section v-else>
-      <ul>
         <div v-if="!ownedList.length">You don't own any NFT on LikeCoin chain</div>
-        <li v-for="i in ownedList">
-          <div>
-            <NftLink :class-id="i.classId" />
-             | <NftLink :class-id="i.classId" :nft-id="i.id" />
-             | {{ i.data.metadata.name }}
-            <button @click="viewClassListings(i.classId)">View Listing</button>
-            <button @click="newNFTListing(i.classId, i.id)">Sell</button>
-          </div>
-        </li>
-      </ul>
+        <table v-else>
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>NFT information</th>
+                <th>Your Listing</th>
+            </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item, i in ownedList">
+            <td>#{{i + 1}}</td>
+            <td>
+              <h4>{{item.data.metadata.name}}</h4>
+              Class ID: <NftLink :class-id="item.classId" /><br />
+              NFT ID: <NftLink :class-id="item.classId" :nft-id="item.id" /><br />
+              <button @click="viewClassListings(item.classId)">View NFT Class Listing</button>
+            </td>
+            <td>
+              <button @click="newNFTListing(item.classId, item.id)">Sell</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </section>
   </div>
 </template>
@@ -59,3 +71,10 @@ async function newNFTListing(classId: string, nftId: string) {
   router.push({ path: `/sell/${classId}/${nftId}` });
 }
 </script>
+
+<style scoped>
+table, td, th {
+  border-collapse: collapse;
+  border: 1px solid;
+}
+</style>
