@@ -1,7 +1,7 @@
 <template>
   <div>
     <h2>View my NFTs</h2>
-    <div v-if="!wallet">Please connect wallet</div>
+    <div v-if="!wallet">Please <a href="#" @click.prevent="connect">connect</a> wallet</div>
     <section v-else>
       <div v-if="!ownedList.length">You don't own any NFT on LikeCoin chain</div>
       <table v-else>
