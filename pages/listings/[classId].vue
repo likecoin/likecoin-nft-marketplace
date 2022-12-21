@@ -1,10 +1,14 @@
 <template>
   <div>
-    <h1>{{ metadata.name }}</h1>
+    <h1>{{ metadata.name }}</h1><br />
+    <img v-if="metadata.data?.metadata?.image" :src="convertImageSrc(metadata.data.metadata.image)" width="256"
+      height="256" /><br />
     <p>{{ metadata.description }}</p>
     <div>Class ID:
       <NftLink :class-id="classId" />
     </div>
+    <a v-if="metadata.data?.metadata?.external_url" :href="metadata.data.metadata.external_url" target="_blank"
+      rel="noopener">View External Link</a><br />
     <h2>Listings</h2>
     <section>
       <div v-if="!listing.length">No one is selling this NFT yet</div>
@@ -46,6 +50,7 @@ import BigNumber from 'bignumber.js';
 import { storeToRefs } from 'pinia';
 import { useWalletStore } from '~/stores/wallet';
 import { queryNFTClass, queryListingByNFTClassId } from '../../utils/cosmos';
+import { convertLongToNumber, convertImageSrc } from '../../utils';
 
 const router = useRouter();
 const route = useRoute();
@@ -61,9 +66,6 @@ onMounted(async () => {
 })
 
 const { connect } = store;
-function convertLongToNumber(number: any) {
-  return new BigNumber(number).shiftedBy(-9).toFixed();
-}
 async function buyNFT({
   classId,
   nftId,
