@@ -10,7 +10,8 @@
   "devDependencies": {
     "@keplr-wallet/types": "^0.11.24",
     "cosmjs-types": "^0.6.0",
-    "nuxt": "3.0.0"
+    "nuxt": "3.0.0",
+    "vue-gtag": "^2.0.1"
   },
   "dependencies": {
     "@cosmjs/stargate": "^0.29.5",
