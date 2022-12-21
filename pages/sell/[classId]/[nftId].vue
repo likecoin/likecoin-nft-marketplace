@@ -13,7 +13,9 @@
           <td>#0</td>
           <td>
             <div>
-              <h4>{{ nftData?.data?.metadata.name }}</h4>
+              <h4>{{ nftData.data?.metadata.name }}</h4>
+              <img v-if="nftData.data?.metadata?.image" :src="convertImageSrc(nftData.data?.metadata.image)" width="256"
+                height="256" /><br />
               Class ID:
               <NftLink :class-id="classId" /><br />
               NFT ID:
