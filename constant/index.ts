@@ -10,3 +10,7 @@ export const LCD_URL = IS_TESTNET
   ? "https://node.testnet.like.co/"
   : "https://mainnet-node.like.co/";
 export const LIKER_LAND_HOST = `${IS_TESTNET ? "rinkeby." : ""}liker.land`;
+
+export const ARWEAVE_ENDPOINT = "https://arweave.net";
+
+export const IPFS_VIEW_GATEWAY_URL = "https://ipfs.io/ipfs";

@@ -17,6 +17,7 @@
             <td>#{{ i + 1 }}</td>
             <td>
               <h4>{{ item.data.metadata.name }}</h4>
+              <img v-if="item.data.metadata.image" :src="convertImageSrc(item.data.metadata.image)" width="64" height="64"/><br />
               Class ID:
               <NftLink :class-id="item.classId" /><br />
               NFT ID:
