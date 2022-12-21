@@ -1,0 +1,1 @@
+import{B as o,I as n,A as s}from"./cosmos.e8ef49de.js";function a(r){return new o(r).shiftedBy(-9).toFixed()}function u(r){const[e,t]=r.split("://");switch(e){case"ar":return`${s}/${t}`;case"ipfs":return`${n}/${t}`;default:return r}}export{a,u as c};
