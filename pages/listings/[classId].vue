@@ -21,7 +21,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item, i in listing">
+          <tr
+            v-for="item, i in listing"
+            :key="`${item.classId}_${item.nftId}`"
+          >
             <td>#{{ i + 1 }}</td>
             <td>
               <div>

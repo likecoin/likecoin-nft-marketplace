@@ -10,7 +10,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item, i in buyNFTEvents">
+        <tr
+          v-for="item, i in buyNFTEvents"
+          :key="`${item.class_id}_${item.nft_id}`"
+        >
           <td>#{{ i + 1 }}</td>
           <td>
             <div>

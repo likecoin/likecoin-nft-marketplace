@@ -13,7 +13,10 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="item, i in ownedList">
+          <tr
+            v-for="item, i in ownedList"
+            :key="`${item.classId}_${item.id}`"
+          >
             <td>#{{ i + 1 }}</td>
             <td>
               <h4>{{ item.data.metadata.name }}</h4>
