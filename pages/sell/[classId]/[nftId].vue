@@ -53,8 +53,8 @@ const nftData = ref({} as any);
 const listingPrice = ref(32);
 const listingExpiration = ref(new Date(Date.now() + 15552000000).toISOString().split('T')[0]);
 
-const maxExpirationValue = computed(() => new Date(Date.now() + 15552000000).toISOString().split('T')[0]);
-const minExpirationValue = computed(() => new Date(Date.now()).toISOString().split('T')[0]);
+const maxExpirationValue = new Date(Date.now() + 15552000000).toISOString().split('T')[0];
+const minExpirationValue = new Date(Date.now()).toISOString().split('T')[0];
 const classId = computed(() => route.params.classId as string);
 const nftId = computed(() => route.params.nftId as string);
 onMounted(async () => {
