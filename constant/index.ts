@@ -7,8 +7,8 @@ export const RPC_URL = IS_TESTNET
   ? "https://node.testnet.like.co/rpc/"
   : "https://mainnet-node.like.co/rpc/";
 export const LCD_URL = IS_TESTNET
-  ? "https://node.testnet.like.co/"
-  : "https://mainnet-node.like.co/";
+  ? "https://node.testnet.like.co"
+  : "https://mainnet-node.like.co";
 export const LIKER_LAND_HOST = `${IS_TESTNET ? "rinkeby." : ""}liker.land`;
 
 export const ARWEAVE_ENDPOINT = "https://arweave.net";
