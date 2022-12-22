@@ -52,23 +52,27 @@
 import BigNumber from 'bignumber.js';
 import { storeToRefs } from 'pinia';
 import { useWalletStore } from '~/stores/wallet';
-import { queryNFTClass, queryListingByNFTClassId } from '../../utils/cosmos';
+import { useMetadataStore } from '~/stores/metadata';
+import { queryListingByNFTClassId } from '../../utils/cosmos';
 import { convertLongToNumber, convertImageSrc } from '../../utils';
 
 const router = useRouter();
 const route = useRoute();
-const store = useWalletStore();
-const { wallet, signer } = storeToRefs(store);
+const walletStore = useWalletStore();
+const metadataStore = useMetadataStore();
+const { wallet, signer } = storeToRefs(walletStore);
 const listing = ref([] as any[]);
 const metadata = ref({} as any);
 
 const classId = computed(() => route.params.classId as string);
+
+const { connect } = walletStore;
+const { lazyFetchClassMetadata } = metadataStore;
+
 onMounted(async () => {
-  metadata.value = await queryNFTClass(classId.value);
+  metadata.value = await lazyFetchClassMetadata(classId.value);
   listing.value = await queryListingByNFTClassId(classId.value);
 })
-
-const { connect } = store;
 async function buyNFT({
   classId,
   nftId,
