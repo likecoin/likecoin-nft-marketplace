@@ -5,7 +5,7 @@
 <script setup lang="ts">
 import { LIKER_LAND_HOST } from '~/constant';
 
-const props = defineProps({
-  wallet: { type: String, required: true },
-})
+const props = defineProps<{
+  wallet: string,
+}>()
 </script>
