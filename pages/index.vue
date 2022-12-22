@@ -12,7 +12,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="item, i in listingEvents"
+            v-for="item, i in effectiveEvents"
             :key="`${item.class_id}_${item.nft_id}`"
           >
             <td>#{{ i + 1 }}</td>
@@ -53,13 +53,21 @@ import { useMetadataStore } from '~/stores/metadata';
 
 const router = useRouter();
 const listingEvents = ref([] as any[]);
+const buyNFTEvents = ref([] as any[]);
 
 const metadataStore = useMetadataStore();
 const { getClassMetadataById, lazyFetchClassMetadata } = metadataStore;
 
 onMounted(async () => {
   listingEvents.value = await getRecentListingEvents()
+  buyNFTEvents.value = await getRecentBuyNFTEvents();
   await Promise.all(listingEvents.value.map(v => lazyFetchClassMetadata(v.class_id)));
+})
+
+// HACK: assume there will not be a same combo of class id + nft id + seller that is still effective
+const effectiveEvents = computed(() => {
+  const uuidSet = new Set(buyNFTEvents.value.map(e => `${e.class_id}_${e.nft_id}_${e.seller}`));
+  return listingEvents.value.filter(l => !uuidSet.has(`${l.class_id}_${l.nft_id}_${l.creator}`));
 })
 
 function viewClassListings(classId: string) {
