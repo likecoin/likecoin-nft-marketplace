@@ -18,6 +18,12 @@
             <td>#{{ i + 1 }}</td>
             <td>
               <div>
+                <h4>{{ getClassMetadataById(item.class_id)?.name }}</h4>
+                <img
+                  v-if="getClassMetadataById(item.class_id)?.data?.metadata?.image"
+                  :src="convertImageSrc(getClassMetadataById(item.class_id).data?.metadata.image)"
+                  height="64"
+                  width="64" /><br />
                 Class ID:
                 <NftLink :class-id="item.class_id" /><br />
                 NFT ID:
@@ -43,12 +49,17 @@
 
 <script setup lang="ts">
 import BigNumber from 'bignumber.js';
+import { useMetadataStore } from '~/stores/metadata';
 
 const router = useRouter();
 const listingEvents = ref([] as any[]);
 
+const metadataStore = useMetadataStore();
+const { getClassMetadataById, lazyFetchClassMetadata } = metadataStore;
+
 onMounted(async () => {
   listingEvents.value = await getRecentListingEvents()
+  await Promise.all(listingEvents.value.map(v => lazyFetchClassMetadata(v.class_id)));
 })
 
 function viewClassListings(classId: string) {
