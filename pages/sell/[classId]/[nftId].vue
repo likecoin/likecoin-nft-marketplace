@@ -42,12 +42,14 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia';
 import { useWalletStore } from '~/stores/wallet';
-import { queryNFTClass, queryNFT, signCreateNFTListing } from '../../../utils/cosmos';
+import { useMetadataStore } from '~/stores/metadata';
+import { signCreateNFTListing } from '../../../utils/cosmos';
 
 const router = useRouter();
 const route = useRoute();
-const store = useWalletStore();
-const { wallet, signer } = storeToRefs(store);
+const walletStore = useWalletStore();
+const metadataStore = useMetadataStore();
+const { wallet, signer } = storeToRefs(walletStore);
 const classData = ref({} as any);
 const nftData = ref({} as any);
 const listingPrice = ref(32);
@@ -57,12 +59,14 @@ const maxExpirationValue = new Date(Date.now() + 15552000000).toISOString().spli
 const minExpirationValue = new Date(Date.now()).toISOString().split('T')[0];
 const classId = computed(() => route.params.classId as string);
 const nftId = computed(() => route.params.nftId as string);
-onMounted(async () => {
-  classData.value = await queryNFTClass(classId.value);
-  nftData.value = await queryNFT(classId.value, nftId.value);
-})
 
-const { connect } = store;
+const { connect } = walletStore;
+const { lazyFetchClassMetadata, lazyFetchNFTMetadata } = metadataStore;
+
+onMounted(async () => {
+  classData.value = await lazyFetchClassMetadata(classId.value);
+  nftData.value = await lazyFetchNFTMetadata(classId.value, nftId.value);
+})
 
 async function viewClassListings(classId: string) {
   router.push({ path: `/listings/${classId}` });
