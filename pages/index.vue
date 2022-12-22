@@ -32,6 +32,7 @@
                 <div>{{ new BigNumber(item.price).shiftedBy(-9).toFixed() }}LIKE</div>
                 <div>till {{ item.expiration }}</div>
               </section>
+              <button @click="viewClassListings(item.class_id)">View</button>
             </td>
           </tr>
         </tbody>
