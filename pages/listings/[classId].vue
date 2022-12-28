@@ -11,7 +11,7 @@
       rel="noopener">View External Link</a><br />
     <h2>Listings</h2>
     <section>
-      <div v-if="!listing.length">No one is selling this NFT yet</div>
+      <div v-if="!combinedListing.length">No one is selling this NFT yet</div>
       <table v-else>
         <thead>
           <tr>
