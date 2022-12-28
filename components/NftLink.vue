@@ -1,5 +1,7 @@
 <template>
-  <a :href="targetUrl" target="_blank" rel="noopener">{{ displayText }} </a>
+  <a :href="targetUrl" target="_blank" rel="noopener">
+    <slot>{{ displayText }}</slot>
+  </a>
 </template>
 
 <script setup lang="ts">
