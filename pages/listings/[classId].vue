@@ -22,7 +22,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="item, i in listing"
+            v-for="item, i in combinedListing"
             :key="`${item.classId}_${item.nftId}`"
           >
             <td>#{{ i + 1 }}</td>
@@ -37,9 +37,10 @@
             <td>
               <section>
                 <div>{{ convertLongToNumber(item.price) }} LIKE</div>
-                <div>till {{ item.expiration }}</div>
+                <div v-if="item.expiration">till {{ item.expiration }}</div>
               </section>
-              <button @click="buyNFT(item)">Buy</button>
+              <NftLink v-if="item.isWritingNFT" :class-id="classId">Buy from liker.land</NftLink>
+              <button v-else @click="buyNFT(item)">Buy</button>
             </td>
           </tr>
         </tbody>
@@ -50,10 +51,12 @@
 
 <script setup lang="ts">
 import BigNumber from 'bignumber.js';
+import Long from 'long';
 import { storeToRefs } from 'pinia';
 import { useWalletStore } from '~/stores/wallet';
 import { useMetadataStore } from '~/stores/metadata';
 import { queryListingByNFTClassId } from '../../utils/cosmos';
+import { queryWritingNFTData } from '../../utils/likeco'
 import { convertLongToNumber, convertImageSrc } from '../../utils';
 
 const router = useRouter();
@@ -62,17 +65,37 @@ const walletStore = useWalletStore();
 const metadataStore = useMetadataStore();
 const { wallet, signer } = storeToRefs(walletStore);
 const listing = ref([] as any[]);
+const writingNFTListing = ref([] as any[]);
 const metadata = ref({} as any);
 
 const classId = computed(() => route.params.classId as string);
+const combinedListing = computed(() => ([] as any).concat(...listing.value, ...writingNFTListing.value));
 
 const { connect } = walletStore;
 const { lazyFetchClassMetadata } = metadataStore;
 
 onMounted(async () => {
-  metadata.value = await lazyFetchClassMetadata(classId.value);
-  listing.value = await queryListingByNFTClassId(classId.value);
+  [metadata.value, listing.value] = await Promise.all([
+    lazyFetchClassMetadata(classId.value),
+    queryListingByNFTClassId(classId.value),
+    await queryWritingNFTListing(classId.value),
+  ]);
 })
+
+async function queryWritingNFTListing(classId: string) {
+  const res = await queryWritingNFTData(classId);
+  if (res) {
+    const { price, metadata : { nextNewNFTId, ownerWallet } } = res;
+    writingNFTListing.value = [{
+      classId,
+      nftId: nextNewNFTId,
+      price: Long.fromNumber(price * 1000000000),
+      seller: ownerWallet,
+      isWritingNFT: true,
+    }];
+  }
+}
+
 async function buyNFT({
   classId,
   nftId,
