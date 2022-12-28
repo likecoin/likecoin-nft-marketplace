@@ -69,15 +69,17 @@ const writingNFTListing = ref([] as any[]);
 const metadata = ref({} as any);
 
 const classId = computed(() => route.params.classId as string);
-const combinedListing = computed(() => ([] as any).concat(...listing.value, ...writingNFTListing.value));
+const combinedListing = computed(() => ([] as any)
+  .concat(...listing.value, ...writingNFTListing.value)
+  .sort((a: any, b: any) => a.price.toNumber() - b.price.toNumber()));
 
 const { connect } = walletStore;
 const { lazyFetchClassMetadata } = metadataStore;
 
 onMounted(async () => {
-  [metadata.value, listing.value] = await Promise.all([
-    lazyFetchClassMetadata(classId.value),
-    queryListingByNFTClassId(classId.value),
+  await Promise.all([
+    lazyFetchClassMetadata(classId.value).then(res => metadata.value = res),
+    queryListingByNFTClassId(classId.value).then(res => listing.value = res),
     await queryWritingNFTListing(classId.value),
   ]);
 })
