@@ -16,3 +16,5 @@ export const LIKE_CO_API = `https://api.${IS_TESTNET ? 'rinkeby.' : ''}like.co`;
 export const ARWEAVE_ENDPOINT = "https://arweave.net";
 
 export const IPFS_VIEW_GATEWAY_URL = "https://ipfs.io/ipfs";
+
+export const CHAIN_EXPLORER_URL = "https://www.mintscan.io/likecoin/txs";
