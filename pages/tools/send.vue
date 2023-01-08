@@ -7,16 +7,19 @@
         <label>NFT Class ID</label>
         <br />
         <input v-model="classId"/>
-        <!-- <button
-          @click="showNftIdList = true"
+        <a
+          href="#"
+          @click.prevent="showNftIdList = true"
           v-if="!showNftIdList"
         >
           Maunally enter ID
-        </button>
+        </a>
         <template v-else>
+          <br />
           <label>Enter List of NFT IDs to send (optional)</label>
+          <br />
           <textarea v-model="nftIdListInput"></textarea>
-        </template> -->
+        </template>
       </section>
       <section>
           <label>Recepient Address list</label>
@@ -55,15 +58,15 @@ import { CHAIN_EXPLORER_URL } from '~/constant';
 const store = useWalletStore();
 const { wallet, signer } = storeToRefs(store);
 const classId = ref('');
-// const showNftIdList = ref(false);
-// const nftIdListInput = ref('');
+const showNftIdList = ref(false);
+const nftIdListInput = ref('');
 const addressListInput = ref('');
 const memoString = ref('');
 const isLoading = ref(false);
 const transactionHash = ref('');
 const error = ref('');
 
-// const nftIdList = computed(() => nftIdListInput.value.split('\n'));
+const nftIdList = computed(() => nftIdListInput.value.split('\n'));
 const addressList= computed(() => addressListInput.value.trim().split('\n'));
 
 const { connect } = store;
@@ -76,12 +79,16 @@ async function sendNFTs() {
   if (!wallet.value || !signer.value) return;
   try {
     isLoading.value = true;
-    const { nfts } = await getNFTs({ classId: classId.value , owner: wallet.value, needCount: addressList.value.length });
-    if (nfts.length < addressList.value.length) throw new Error('NOT_ENOUGH_NFT_TO_SEND');
+    let nftList = nftIdList.value;
+    if (!nftList || !nftList.length) {
+      const { nfts } = await getNFTs({ classId: classId.value , owner: wallet.value, needCount: addressList.value.length });
+      nftList = nfts.map(n => n.id);
+    }
+    if (nftList.length < addressList.value.length) throw new Error('NOT_ENOUGH_NFT_TO_SEND');
     const res = await signSendNFTs(
       addressList.value,
       classId.value,
-      nfts.map(n => n.id),
+      nftList,
       signer.value,
       wallet.value,
       memoString.value,
