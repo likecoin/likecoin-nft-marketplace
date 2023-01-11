@@ -6,7 +6,7 @@
       <section>
         <label>NFT Class ID</label>
         <br />
-        <input v-model="classId"/>
+        <input v-model="classId" size="50"/>
         <a
           href="#"
           @click.prevent="showNftIdList = true"
@@ -74,8 +74,8 @@ const isLoading = ref(false);
 const transactionHash = ref('');
 const error = ref('');
 
-const nftIdList = computed(() => nftIdListInput.value.split('\n'));
-const addressList= computed(() => addressListInput.value.trim().split('\n'));
+const nftIdList = computed(() => nftIdListInput.value.trim().split('\n').filter(n => !!n));
+const addressList= computed(() => addressListInput.value.trim().split('\n').filter(n => !!n));
 
 const { connect } = store;
 async function sendNFTs() {

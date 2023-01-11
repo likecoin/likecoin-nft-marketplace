@@ -193,7 +193,7 @@ export async function getNFTs({ classId = '', owner = '', needCount = 0 }) {
     key = data.pagination.next_key;
     nfts.push(...data.nfts);
     if (!total) total = data.pagination.total;
-    if (needCount && nfts.length > needCount || nfts.length >= total) break;
+    if ((needCount && nfts.length > needCount) || nfts.length >= total) break;
     pageCounts += 1;
   } while (key);
   return { nfts };
