@@ -12,13 +12,17 @@
           @click.prevent="showNftIdList = true"
           v-if="!showNftIdList"
         >
-          Maunally enter ID
+          Maunally enter ID (optional)
         </a>
         <template v-else>
           <br />
           <label>Enter List of NFT IDs to send (optional)</label>
           <br />
-          <textarea v-model="nftIdListInput"></textarea>
+          <textarea
+            v-model="nftIdListInput"
+            cols="50"
+            rows="10"
+          ></textarea>
         </template>
       </section>
       <section>
@@ -33,7 +37,11 @@
       <section>
         <label>Transfer message</label>
         <br />
-        <input v-model="memoString" />
+        <textarea
+          v-model="memoString"
+          cols="50"
+          rows="3"
+        ></textarea>
       </section>
       <a
         v-if="transactionHash"
