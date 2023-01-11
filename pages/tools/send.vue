@@ -49,7 +49,7 @@
         target="_blank"
         rel="noopener"
       >
-        Sucess, view transaction here
+        Success, view transaction here
       </a>
       <div v-else-if="isLoading">Loadings...</div>
       <button v-else @click="sendNFTs">Send</button>
