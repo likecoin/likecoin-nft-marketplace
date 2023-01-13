@@ -1,6 +1,6 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { OfflineSigner } from "@cosmjs/proto-signing";
-import { ISCNSigningClient, ISCNQueryClient } from "@likecoin/iscn-js";
+import { ISCNSigningClient, ISCNQueryClient, ISCNRecordData } from "@likecoin/iscn-js";
 import { parseAndCalculateStakeholderRewards } from '@likecoin/iscn-js/dist/iscn/parsing';
 import axios from "axios";
 import {
@@ -127,6 +127,31 @@ export async function queryISCN(classId: string) {
   return res?.royaltyConfig;
 }
 
+export async function calcualteRoyaltyFromISCN(iscnData: ISCNRecordData, iscnOwner: string) {
+  const feeAmount = 25000; // 2.5%
+  const userAmount = 1000000 - feeAmount; // 1000000 - fee
+  const rewardMap = await parseAndCalculateStakeholderRewards(iscnData, iscnOwner, {
+    precision: 0,
+    totalAmount: userAmount,
+  });
+  const rewards = Array.from(rewardMap.entries());
+  const stakeholders = rewards.map((r) => {
+    const [
+      account,
+      { amount },
+    ] = r;
+    return {
+      account,
+      weight: parseInt(amount, 10),
+    };
+  });
+  stakeholders.push({
+      account: LIKER_NFT_FEE_WALLET,
+      weight: feeAmount,
+  })
+  return stakeholders;
+}
+
 export async function signBuyNFT(
   classId: string,
   nftId: string,
@@ -193,7 +218,7 @@ export async function signSendNFTs(
 
 export async function signCreateRoyltyConfig(
   classId: string,
-  iscnData: any,
+  iscnData: ISCNRecordData,
   iscnOwner: string,
   isUpdate: boolean,
   signer: OfflineSigner,
@@ -201,28 +226,7 @@ export async function signCreateRoyltyConfig(
 ) {
   try {
     const rateBasisPoints = 1000; // 10% as in current chain config
-    const feeAmount = 25000; // 2.5%
-    const userAmount = 1000000 - feeAmount; // 1000000 - fee
-    const rewardMap = await parseAndCalculateStakeholderRewards(iscnData, iscnOwner, {
-      precision: 0,
-      totalAmount: userAmount,
-    });
-    const rewards = Array.from(rewardMap.entries());
-    const stakeholders = rewards.map((r) => {
-      const [
-        account,
-        { amount },
-      ] = r;
-      return {
-        account,
-        weight: parseInt(amount, 10),
-      };
-    });
-    stakeholders.push({
-        account: LIKER_NFT_FEE_WALLET,
-        weight: feeAmount,
-    })
-
+    const stakeholders = await calcualteRoyaltyFromISCN(iscnData, iscnOwner);
     const signingClient = await getSigningClient();
     await signingClient.connectWithSigner(RPC_URL, signer);
     let res: any;

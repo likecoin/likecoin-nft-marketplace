@@ -12,7 +12,7 @@
 
     <section>
       <h3>Royalty Table</h3>
-      <table v-if="royaltyConfig && royaltyConfig.length">
+      <table v-if="royaltyList && royaltyList.length">
         <thead>
           <tr>
             <th>Account</th>
@@ -21,7 +21,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="config in royaltyConfig"
+            v-for="config in royaltyList"
             :key="config.account"
           >
             <td><UserLink :wallet="config.account" /></td>
@@ -33,7 +33,7 @@
         No royalty config found, all revenue is collected by seller except for liker.land sales.
       </div>
       <button v-if="isShowSyncRoyaltyButton" @click="syncRoyaltyWithISCN">
-        Sync NFT royalty config with ISCN stakeholders
+        Press to sync NFT royalty config according to ISCN stakeholders
       </button>
     </section>
 
@@ -98,13 +98,29 @@ const writingNFTListing = ref([] as any[]);
 const royaltyConfig = ref(null as any);
 const metadata = ref({} as any);
 const iscnData = ref({} as any);
+const iscnRoyalty = ref(null as any);
 
 const classId = computed(() => route.params.classId as string);
 const combinedListing = computed(() => ([] as any)
   .concat(...listing.value, ...writingNFTListing.value)
   .sort((a: any, b: any) => a.price.toNumber() - b.price.toNumber()));
+const royaltyList = computed(() => {
+  const rateBasisPoints = (royaltyConfig.value?.rateBasisPoints / 100) || 0;
+  const totalWeight = royaltyConfig.value?.stakeholders.reduce((acc: number, s: any) => acc + s.weight, 0) || 1;
+  return royaltyConfig.value?.stakeholders?.map((s: any) => ({ ...s, weight: (s.weight / totalWeight) * rateBasisPoints }))
+})
 const isShowSyncRoyaltyButton = computed(() => {
-  return iscnData.value && iscnData.value.owner === wallet.value && !royaltyConfig.value;
+  const isReady = !!iscnData.value;
+  const isOwner = iscnData.value.owner === wallet.value;
+  const isNotEqual = iscnRoyalty.value?.length !== royaltyConfig.value?.stakeholders.length;
+  let needsUpdate = false;
+  iscnRoyalty.value?.forEach((data: any, index: number) => {
+    const royaltyData = royaltyConfig.value?.stakeholders[index];
+    if (!royaltyData || data.account !== royaltyData.account || data.weight !== royaltyData.weight) {
+      needsUpdate = true;
+    }
+  }, false)
+  return isReady && isOwner && isNotEqual && needsUpdate;
 });
 
 const { connect } = walletStore;
@@ -126,17 +142,24 @@ onMounted(async () => {
 
 async function queryISCNData(iscnId: string) {
   iscnData.value = await queryISCNById(iscnId);
+  iscnRoyalty.value = await calcualteRoyaltyFromISCN(iscnData.value.data, iscnData.value.owner);
 }
 
 async function queryRoyalty() {
-  const config = await queryNFTClassRoyalty(classId.value);
-  const rateBasisPoints = Number((config?.rateBasisPoints) || 0) / 100;
-  const stakeholders = config?.stakeholders.map(s => ({
-    account: bech32.encode('like', bech32.toWords(s.account)),
-    weight: s.weight.toNumber(),
-  }));
-  const totalWeight = stakeholders?.reduce((acc, s) => acc + s.weight, 0) || 1;
-  royaltyConfig.value = stakeholders?.map(s => ({ ...s, weight: (s.weight / totalWeight) * rateBasisPoints }))
+  try {
+    const config = await queryNFTClassRoyalty(classId.value);
+    if (!config) return;
+    const stakeholders = config.stakeholders.map(s => ({
+      account: bech32.encode('like', bech32.toWords(s.account)),
+      weight: s.weight.toNumber(),
+    }));
+    royaltyConfig.value = {
+      rateBasisPoints: config.rateBasisPoints.toNumber(),
+      stakeholders,
+    }
+  } catch (err) { // might not exists
+    console.error(err)
+  }
 }
 
 async function syncRoyaltyWithISCN() {
