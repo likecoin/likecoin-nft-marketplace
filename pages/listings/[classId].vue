@@ -9,6 +9,31 @@
     </div>
     <a v-if="metadata.data?.metadata?.external_url" :href="metadata.data.metadata.external_url" target="_blank"
       rel="noopener">View External Link</a><br />
+
+    <section>
+      <h3>Royalty Table</h3>
+      <table v-if="royaltyConfig && royaltyConfig.length">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Ratio</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="config in royaltyConfig"
+            :key="config.account"
+          >
+            <td><UserLink :wallet="config.account" /></td>
+            <td>{{ config.weight }}%</td>
+          </tr>
+        </tbody>
+      </table>
+      <div v-else>
+        No royalty config found, all revenue is collected by seller except for liker.land sales.
+      </div>
+    </section>
+
     <h2>Listings</h2>
     <section>
       <div v-if="!combinedListing.length">No one is selling this NFT yet</div>
@@ -52,6 +77,7 @@
 <script setup lang="ts">
 import BigNumber from 'bignumber.js';
 import Long from 'long';
+import { bech32 } from 'bech32';
 import { storeToRefs } from 'pinia';
 import { useWalletStore } from '~/stores/wallet';
 import { useMetadataStore } from '~/stores/metadata';
@@ -66,6 +92,7 @@ const metadataStore = useMetadataStore();
 const { wallet, signer } = storeToRefs(walletStore);
 const listing = ref([] as any[]);
 const writingNFTListing = ref([] as any[]);
+const royaltyConfig = ref({} as any);
 const metadata = ref({} as any);
 
 const classId = computed(() => route.params.classId as string);
@@ -80,9 +107,21 @@ onMounted(async () => {
   await Promise.all([
     lazyFetchClassMetadata(classId.value).then(res => metadata.value = res),
     queryListingByNFTClassId(classId.value).then(res => listing.value = res),
-    await queryWritingNFTListing(classId.value),
+    queryWritingNFTListing(classId.value),
   ]);
+  queryRoyalty();
 })
+
+async function queryRoyalty() {
+  const config = await queryNFTClassRoyalty(classId.value);
+  const rateBasisPoints = Number((config?.rateBasisPoints) || 0) / 100;
+  const stakeholders = config?.stakeholders.map(s => ({
+    account: bech32.encode('like', bech32.toWords(s.account)),
+    weight: s.weight.toNumber(),
+  }));
+  const totalWeight = stakeholders?.reduce((acc, s) => acc + s.weight, 0) || 1;
+  royaltyConfig.value = stakeholders?.map(s => ({ ...s, weight: (s.weight / totalWeight) * rateBasisPoints }))
+}
 
 async function queryWritingNFTListing(classId: string) {
   const res = await queryWritingNFTData(classId);

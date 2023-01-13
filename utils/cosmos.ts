@@ -97,6 +97,12 @@ export async function queryNFT(classId: string, nftId: string) {
   return res?.nft;
 }
 
+export async function queryNFTClassRoyalty(classId: string) {
+  const c = await getCosmosQueryClient();
+  const res = await c.likenft.RoyaltyConfig(classId);
+  return res?.royaltyConfig;
+}
+
 export async function queryBlock(height: number) {
   const c = await getQueryClient();
   const sc = await c.getStargateClient()
