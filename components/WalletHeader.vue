@@ -1,10 +1,10 @@
 <template>
-  <div style="padding: 20px;">
-    <span v-if="wallet">
-      <span>{{ wallet }}</span> &nbsp;
-      <NuxtLink :to="'/owned'">View my NFT</NuxtLink> &nbsp;
+  <div style="display:flex; flex-wrap:wrap; justify-content: center; align-items: center; gap: 10px;">
+    <template v-if="wallet">
+      <span>{{ wallet }}</span>
+      <NuxtLink :to="'/owned'">View my NFT</NuxtLink>
       <button @click="disconnect">Logout</button>
-    </span>
+    </template>
     <button v-if="!wallet" @click="connect">Connect</button>
   </div>
 </template>
