@@ -1,17 +1,26 @@
 <template>
   <div>
     <header>
-      <div style="display: flex">
+      <div style="display: flex; flex-wrap:wrap; background-color:#28646e; color: white; padding: 20px;">
         <h1>LikeCoin NFT Marketplace</h1>
         <div style="flex: 1"></div>
         <WalletHeader />
       </div>
-      <NavHeader />
+      <div style="margin: 10px">
+        <NavHeader />
+      </div>
     </header>
-    <slot />
+    <div style="margin: 10px">
+      <slot />
+    </div>
   </div>
 </template>
 <style>
+
+body {
+  margin: 0;
+}
+
 h1 {
   display: inline-block;
 }
