@@ -12,7 +12,7 @@
     <footer>
       <a href="https://liker.land">Writing NFT</a>
       <a href="https://likecoin.github.io/likecoin-nft-dashboard/">NFT Dashboard</a>
-      <a href="https://github.com/likecoin/likecoin-nft-marketplace">Github</a>
+      <a href="https://github.com/likecoin/likecoin-nft-marketplace">GitHub</a>
       <a href="https://like.co">About LikeCoin</a>
     </footer>
   </div>
