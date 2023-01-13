@@ -30,11 +30,9 @@ th {
 }
 
 footer {
-  margin: 5px;
+  padding: 12px 12px 20px;
+  
+  display: flex;
+  gap: 10px;
 }
-
-footer a {
-  margin-left: 10px;
-}
-
 </style>
