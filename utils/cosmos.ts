@@ -13,6 +13,7 @@ import {
   NFTExtension,
   LikeNFTExtension,
 } from "@likecoin/iscn-js/dist/queryExtensions";
+import { formatMsgSend } from '@likecoin/iscn-js/dist/messages/likenft.js';
 import { AuthzExtension } from "@cosmjs/stargate/build/modules/authz/queries";
 import { PageRequest } from "cosmjs-types/cosmos/base/query/v1beta1/pagination";
 
@@ -128,6 +129,30 @@ export async function signCreateNFTListing(
   return res as DeliverTxResponse;
 }
 
+export async function signSendNFTs(
+  targetAddresses: string[],
+  classId: string,
+  nftIds: string[],
+  signer: OfflineSigner,
+  address: string,
+  memo: string,
+) {
+  const signingClient = await getSigningClient();
+  await signingClient.connectWithSigner(RPC_URL, signer);
+  const messages = targetAddresses.map((target, i) => formatMsgSend(
+    address,
+    target,
+    classId,
+    nftIds[i],
+  ));
+  const res = await signingClient.sendMessages(
+    address,
+    messages,
+    { memo },
+  );
+  return res as DeliverTxResponse;
+}
+
 export async function getRecentListingEvents() {
   const { data } = await axios.get(
     `${LCD_URL}/cosmos/tx/v1beta1/txs?events=message.action%3D%27create_listing%27&pagination.limit=100&order_by=ORDER_BY_DESC`
@@ -154,4 +179,22 @@ export async function getRecentBuyNFTEvents() {
       )
     );
   return events;
+}
+
+export async function getNFTs({ classId = '', owner = '', needCount = 0 }) {
+  const baseURL = `${LCD_URL}/cosmos/nft/v1beta1/nfts?owner=${owner}&class_id=${classId}`;
+  const nfts = [];
+  let pageCounts = 0;
+  let key = '';
+  let total = 0;
+  do {
+    /* eslint-disable no-await-in-loop */
+    const { data } = await axios.get(`${baseURL}&pagination.key=${key}`);
+    key = data.pagination.next_key;
+    nfts.push(...data.nfts);
+    if (!total) total = data.pagination.total;
+    if ((needCount && nfts.length > needCount) || nfts.length >= total) break;
+    pageCounts += 1;
+  } while (key);
+  return { nfts };
 }
