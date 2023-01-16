@@ -113,13 +113,10 @@ const isShowSyncRoyaltyButton = computed(() => {
   const isReady = !!iscnData.value;
   const isOwner = iscnData.value.owner === wallet.value;
   const isNotEqual = iscnRoyalty.value?.length !== royaltyConfig.value?.stakeholders.length;
-  let needsUpdate = false;
-  iscnRoyalty.value?.forEach((data: any, index: number) => {
+  const needsUpdate = iscnRoyalty.value?.some((data: any, index: number) => {
     const royaltyData = royaltyConfig.value?.stakeholders[index];
-    if (!royaltyData || data.account !== royaltyData.account || data.weight !== royaltyData.weight) {
-      needsUpdate = true;
-    }
-  }, false)
+    return (!royaltyData || data.account !== royaltyData.account || data.weight !== royaltyData.weight);
+  })
   return isReady && isOwner && isNotEqual && needsUpdate;
 });
 
