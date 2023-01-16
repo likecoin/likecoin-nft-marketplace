@@ -181,7 +181,7 @@ export async function getRecentBuyNFTEvents() {
   const events = data.tx_responses
     .filter((t: any) => !t.code)
     .map((t: any) => ({
-      message:  t.tx.body.messages.find(
+      message: t.tx.body.messages.find(
         (m: any) => m["@type"] === "/likechain.likenft.v1.MsgBuyNFT"
       ),
       height: Number(t.height),
