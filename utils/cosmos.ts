@@ -97,6 +97,13 @@ export async function queryNFT(classId: string, nftId: string) {
   return res?.nft;
 }
 
+export async function queryBlock(height: number) {
+  const c = await getQueryClient();
+  const sc = await c.getStargateClient()
+  const block = await sc.getBlock(height);
+  return block;
+}
+
 export async function signBuyNFT(
   classId: string,
   nftId: string,
@@ -181,11 +188,12 @@ export async function getRecentBuyNFTEvents() {
   );
   const events = data.tx_responses
     .filter((t: any) => !t.code)
-    .map((t: any) =>
-      t.tx.body.messages.find(
+    .map((t: any) => ({
+      message: t.tx.body.messages.find(
         (m: any) => m["@type"] === "/likechain.likenft.v1.MsgBuyNFT"
-      )
-    );
+      ),
+      height: Number(t.height),
+    }));
   return events;
 }
 

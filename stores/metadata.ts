@@ -3,6 +3,7 @@ import { defineStore } from "pinia";
 export const useMetadataStore = defineStore("metadata", () => {
   const classMetadata = ref({} as { [key: string]: any });
   const nftMetadata = ref({} as { [key: string]: any });
+  const blockData = ref({} as { [key: string]: any });
 
   function getNFTMetadataKey(classId: string, nftId: string) {
     return `${classId}_${nftId}`;
@@ -14,6 +15,9 @@ export const useMetadataStore = defineStore("metadata", () => {
   const getNftMetadataById = computed(
     () => (classId: string, nftId: string) =>
       nftMetadata.value[getNFTMetadataKey(classId, nftId)]
+  );
+  const getBlockTime = computed(
+    () => (height: number) => blockData.value[height.toString()]?.header.time,
   );
 
   async function fetchClassMetadata(classId: string) {
@@ -27,6 +31,19 @@ export const useMetadataStore = defineStore("metadata", () => {
       return value;
     }
     return fetchClassMetadata(classId);
+  }
+
+  async function fetchBlockData(height: number) {
+    blockData.value[height.toString()] = await queryBlock(height);
+    return blockData.value[height.toString()];
+  }
+
+  async function lazyFetchBlockData(height: number) {
+    let block = blockData.value[height.toString()]
+    if (!block) {
+      block = await fetchBlockData(height);
+    }
+    return block;
   }
 
   async function fetchNFTMetadata(classId: string, nftId: string) {
@@ -48,10 +65,14 @@ export const useMetadataStore = defineStore("metadata", () => {
   return {
     classMetadata,
     nftMetadata,
+    blockData,
     getClassMetadataById,
     getNftMetadataById,
+    getBlockTime,
     fetchClassMetadata,
     lazyFetchClassMetadata,
+    fetchBlockData,
+    lazyFetchBlockData,
     fetchNFTMetadata,
     lazyFetchNFTMetadata,
   };

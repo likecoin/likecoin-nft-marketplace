@@ -66,7 +66,7 @@ onMounted(async () => {
 
 // HACK: assume there will not be a same combo of class id + nft id + seller that is still effective
 const effectiveEvents = computed(() => {
-  const uuidSet = new Set(buyNFTEvents.value.map(e => `${e.class_id}_${e.nft_id}_${e.seller}`));
+  const uuidSet = new Set(buyNFTEvents.value.map(e => `${e.message.class_id}_${e.message.nft_id}_${e.message.seller}`));
   return listingEvents.value.filter(l => !uuidSet.has(`${l.class_id}_${l.nft_id}_${l.creator}`));
 })
 
