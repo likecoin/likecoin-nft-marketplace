@@ -17,15 +17,23 @@ import { formatMsgSend } from '@likecoin/iscn-js/dist/messages/likenft.js';
 import { AuthzExtension } from "@cosmjs/stargate/build/modules/authz/queries";
 import { PageRequest } from "cosmjs-types/cosmos/base/query/v1beta1/pagination";
 
-let client: ISCNSigningClient | null = null;
+let iscnSigningClientPromise: Promise<ISCNSigningClient> | null = null;
+let iscnSigningClient: ISCNSigningClient | null = null;
 
 export async function getSigningClient(): Promise<ISCNSigningClient> {
-  if (!client) {
-    const c = new ISCNSigningClient();
-    await c.connect(RPC_URL);
-    client = c;
+  if (!iscnSigningClient) {
+    if (!iscnSigningClientPromise) {
+      iscnSigningClientPromise = new Promise(async resolve => {
+        const c = new ISCNSigningClient();
+        await c.connect(RPC_URL);
+        iscnSigningClient = c;
+        resolve(c);
+      });
+    }
+    return iscnSigningClientPromise;
+  } else {
+    return iscnSigningClient;
   }
-  return client;
 }
 
 export async function getQueryClient(): Promise<ISCNQueryClient> {
