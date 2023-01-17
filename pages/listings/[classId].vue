@@ -30,7 +30,7 @@
         </tbody>
       </table>
       <div v-else>
-        No royalty config found, all revenue is collected by seller except for liker.land sales.
+        No royalty config found, all revenue on marketplace sales is collected by seller.
       </div>
       <button v-if="isShowSyncRoyaltyButton" @click="syncRoyaltyWithISCN">
         Press to sync NFT royalty config according to ISCN stakeholders
