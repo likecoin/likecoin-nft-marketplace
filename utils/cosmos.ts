@@ -197,6 +197,21 @@ export async function getRecentBuyNFTEvents() {
   return events;
 }
 
+export async function getNFTMarketplaceListing(creator: string) {
+  const items = [] as any[];
+  let key = '';
+  do {
+    const { data } = await axios.get(
+      `${LCD_URL}/likechain/likenft/v1/marketplace?type=listing&creator=${creator}&pagination.key=${key}`
+    );
+    key = data.pagination.next_key;
+    if (data.items) {
+      items.push(...data.items);
+    }
+  } while (key);
+  return items;
+}
+
 export async function getNFTs({ classId = '', owner = '', needCount = 0 }) {
   const baseURL = `${LCD_URL}/cosmos/nft/v1beta1/nfts?owner=${owner}&class_id=${classId}`;
   const nfts = [];

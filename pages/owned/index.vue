@@ -15,7 +15,7 @@
         <tbody>
           <tr
             v-for="item, i in ownedList"
-            :key="`${item.classId}_${item.id}`"
+            :key="makeKey(item.classId, item.id)"
           >
             <td>#{{ i + 1 }}</td>
             <td>
@@ -28,7 +28,11 @@
               <button @click="viewClassListings(item.classId)">View NFT Class Listing</button>
             </td>
             <td>
-              <button @click="newNFTListing(item.classId, item.id)">Sell</button>
+              <section v-if="item.price">
+                <div>{{ new BigNumber(item.price).shiftedBy(-9).toFixed() }}LIKE</div>
+                <div>till {{ item.expiration }}</div>
+              </section>
+              <button v-else @click="newNFTListing(item.classId, item.id)">Sell</button>
             </td>
           </tr>
         </tbody>
@@ -38,6 +42,7 @@
 </template>
 
 <script setup lang="ts">
+import BigNumber from 'bignumber.js';
 import { storeToRefs } from 'pinia';
 import { useWalletStore } from '~/stores/wallet';
 import { queryOwnedNFTClasses } from '../../utils/cosmos';
@@ -46,7 +51,7 @@ const router = useRouter();
 
 const store = useWalletStore();
 const { wallet } = storeToRefs(store);
-const ownedList = ref([] as any[]);
+const ownedMap = ref({} as any);
 
 onMounted(async () => {
   if (!wallet.value) {
@@ -55,18 +60,37 @@ onMounted(async () => {
   if (!wallet.value) {
     return;
   }
-  fetchOwnedNFTs();
+  fetchOwnedAndListingNFTs();
 })
 
 watch(wallet, (newWallet) => {
-  if (newWallet) fetchOwnedNFTs();
+  if (newWallet) fetchOwnedAndListingNFTs();
 })
 
 
 const { connect } = store;
 
-async function fetchOwnedNFTs() {
-  ownedList.value = await queryOwnedNFTClasses(wallet.value);
+function makeKey(classId: string, nftId: string) {
+  return `${classId}_${nftId}`;
+}
+
+async function fetchOwnedAndListingNFTs() {
+  const [
+    ownedList,
+    listingEvents
+  ] = await Promise.all([
+    queryOwnedNFTClasses(wallet.value),
+    getNFTMarketplaceListing(wallet.value),
+  ]);
+  ownedList.forEach((n) => {
+    ownedMap.value[makeKey(n.classId, n.id)] = n;
+  });
+
+  listingEvents.forEach((e: any) => {
+    const n = ownedMap.value[makeKey(e.class_id, e.nft_id)];
+    n.price = e.price;
+    n.expiration = e.expiration;
+  });
 }
 
 async function viewClassListings(classId: string) {
@@ -76,4 +100,6 @@ async function viewClassListings(classId: string) {
 async function newNFTListing(classId: string, nftId: string) {
   router.push({ path: `/sell/${classId}/${nftId}` });
 }
+
+const ownedList = computed(() => Object.values<any>(ownedMap.value));
 </script>
