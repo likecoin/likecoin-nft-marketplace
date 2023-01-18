@@ -1,13 +1,14 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { OfflineSigner } from "@cosmjs/proto-signing";
-import { ISCNSigningClient, ISCNQueryClient } from "@likecoin/iscn-js";
+import { ISCNSigningClient, ISCNQueryClient, ISCNRecordData } from "@likecoin/iscn-js";
+import { parseAndCalculateStakeholderRewards } from '@likecoin/iscn-js/dist/iscn/parsing';
 import axios from "axios";
 import {
   BankExtension,
   DeliverTxResponse,
   QueryClient,
 } from "@cosmjs/stargate";
-import { RPC_URL, LCD_URL } from "~~/constant";
+import { RPC_URL, LCD_URL, LIKER_NFT_FEE_WALLET } from "~/constant";
 import {
   ISCNExtension,
   NFTExtension,
@@ -97,11 +98,58 @@ export async function queryNFT(classId: string, nftId: string) {
   return res?.nft;
 }
 
+export async function queryNFTClassRoyalty(classId: string) {
+  const c = await getCosmosQueryClient();
+  const res = await c.likenft.RoyaltyConfig(classId);
+  return res?.royaltyConfig;
+}
+
+export async function queryISCNById(iscnId: string) {
+  const c = await getQueryClient();
+  const res = await c.queryRecordsById(iscnId);
+  if (!res?.records[0].data) return null;
+  return {
+    owner: res.owner,
+    data: res.records[0].data,
+  }
+}
+
 export async function queryBlock(height: number) {
   const c = await getQueryClient();
   const sc = await c.getStargateClient()
   const block = await sc.getBlock(height);
   return block;
+}
+
+export async function queryISCN(classId: string) {
+  const c = await getCosmosQueryClient();
+  const res = await c.likenft.RoyaltyConfig(classId);
+  return res?.royaltyConfig;
+}
+
+export async function calcualteRoyaltyFromISCN(iscnData: ISCNRecordData, iscnOwner: string) {
+  const feeAmount = 25000; // 2.5%
+  const userAmount = 1000000 - feeAmount; // 1000000 - fee
+  const rewardMap = await parseAndCalculateStakeholderRewards(iscnData, iscnOwner, {
+    precision: 0,
+    totalAmount: userAmount,
+  });
+  const rewards = Array.from(rewardMap.entries());
+  const stakeholders = rewards.map((r) => {
+    const [
+      account,
+      { amount },
+    ] = r;
+    return {
+      account,
+      weight: parseInt(amount, 10),
+    };
+  });
+  stakeholders.push({
+      account: LIKER_NFT_FEE_WALLET,
+      weight: feeAmount,
+  })
+  return stakeholders;
 }
 
 export async function signBuyNFT(
@@ -168,6 +216,46 @@ export async function signSendNFTs(
   return res as DeliverTxResponse;
 }
 
+export async function signCreateRoyltyConfig(
+  classId: string,
+  iscnData: ISCNRecordData,
+  iscnOwner: string,
+  isUpdate: boolean,
+  signer: OfflineSigner,
+  address: string,
+) {
+  try {
+    const rateBasisPoints = 1000; // 10% as in current chain config
+    const stakeholders = await calcualteRoyaltyFromISCN(iscnData, iscnOwner);
+    const signingClient = await getSigningClient();
+    await signingClient.connectWithSigner(RPC_URL, signer);
+    let res: any;
+    if (isUpdate) {
+      res = signingClient.updateRoyaltyConfig(
+      address,
+        classId,
+        {
+          rateBasisPoints,
+          stakeholders,
+        },
+      )
+    } else {
+      res = signingClient.createRoyaltyConfig(
+      address,
+        classId,
+        {
+          rateBasisPoints,
+          stakeholders,
+        },
+      )
+    }
+    return res as DeliverTxResponse;
+  } catch (err) {
+    // Don't throw on royalty create, not critical for now
+    // eslint-disable-next-line no-console
+    console.error(err);
+  }
+}
 export async function getRecentListingEvents() {
   const { data } = await axios.get(
     `${LCD_URL}/cosmos/tx/v1beta1/txs?events=message.action%3D%27create_listing%27&pagination.limit=100&order_by=ORDER_BY_DESC`

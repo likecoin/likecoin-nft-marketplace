@@ -9,6 +9,34 @@
     </div>
     <a v-if="metadata.data?.metadata?.external_url" :href="metadata.data.metadata.external_url" target="_blank"
       rel="noopener">View External Link</a><br />
+
+    <section>
+      <h3>Royalty Table</h3>
+      <table v-if="royaltyList && royaltyList.length">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Ratio</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="config in royaltyList"
+            :key="config.account"
+          >
+            <td><UserLink :wallet="config.account" /></td>
+            <td>{{ config.weight }}%</td>
+          </tr>
+        </tbody>
+      </table>
+      <div v-else>
+        No royalty config found, all revenue on marketplace sales is collected by seller.
+      </div>
+      <button v-if="isShowSyncRoyaltyButton" @click="syncRoyaltyWithISCN">
+        Press to sync NFT royalty config according to ISCN stakeholders
+      </button>
+    </section>
+
     <h2>Listings</h2>
     <section>
       <div v-if="!combinedListing.length">No one is selling this NFT yet</div>
@@ -52,10 +80,11 @@
 <script setup lang="ts">
 import BigNumber from 'bignumber.js';
 import Long from 'long';
+import { bech32 } from 'bech32';
 import { storeToRefs } from 'pinia';
 import { useWalletStore } from '~/stores/wallet';
 import { useMetadataStore } from '~/stores/metadata';
-import { queryListingByNFTClassId } from '../../utils/cosmos';
+import { queryListingByNFTClassId, queryISCNById } from '../../utils/cosmos';
 import { queryWritingNFTData } from '../../utils/likeco'
 import { convertLongToNumber, convertImageSrc } from '../../utils';
 
@@ -66,23 +95,87 @@ const metadataStore = useMetadataStore();
 const { wallet, signer } = storeToRefs(walletStore);
 const listing = ref([] as any[]);
 const writingNFTListing = ref([] as any[]);
+const royaltyConfig = ref(null as any);
 const metadata = ref({} as any);
+const iscnData = ref({} as any);
+const iscnRoyalty = ref(null as any);
 
 const classId = computed(() => route.params.classId as string);
 const combinedListing = computed(() => ([] as any)
   .concat(...listing.value, ...writingNFTListing.value)
   .sort((a: any, b: any) => a.price.toNumber() - b.price.toNumber()));
+const royaltyList = computed(() => {
+  const rateBasisPoints = (royaltyConfig.value?.rateBasisPoints / 100) || 0;
+  const totalWeight = royaltyConfig.value?.stakeholders.reduce((acc: number, s: any) => acc + s.weight, 0) || 1;
+  return royaltyConfig.value?.stakeholders?.map((s: any) => ({ ...s, weight: (s.weight / totalWeight) * rateBasisPoints }))
+})
+const isShowSyncRoyaltyButton = computed(() => {
+  const isReady = !!iscnData.value;
+  const isOwner = iscnData.value.owner === wallet.value;
+  const isNotEqual = iscnRoyalty.value?.length !== royaltyConfig.value?.stakeholders.length;
+  const needsUpdate = iscnRoyalty.value?.some((data: any, index: number) => {
+    const royaltyData = royaltyConfig.value?.stakeholders[index];
+    return (!royaltyData || data.account !== royaltyData.account || data.weight !== royaltyData.weight);
+  })
+  return isReady && isOwner && isNotEqual && needsUpdate;
+});
 
 const { connect } = walletStore;
 const { lazyFetchClassMetadata } = metadataStore;
 
 onMounted(async () => {
   await Promise.all([
-    lazyFetchClassMetadata(classId.value).then(res => metadata.value = res),
+    lazyFetchClassMetadata(classId.value).then(res => {
+      metadata.value = res;
+      if (res.data.parent.iscnIdPrefix) {
+        queryISCNData(metadata.value.data.parent.iscnIdPrefix);
+      }
+    }),
     queryListingByNFTClassId(classId.value).then(res => listing.value = res),
-    await queryWritingNFTListing(classId.value),
+    queryWritingNFTListing(classId.value),
+    queryRoyalty(),
   ]);
 })
+
+async function queryISCNData(iscnId: string) {
+  iscnData.value = await queryISCNById(iscnId);
+  iscnRoyalty.value = await calcualteRoyaltyFromISCN(iscnData.value.data, iscnData.value.owner);
+}
+
+async function queryRoyalty() {
+  try {
+    const config = await queryNFTClassRoyalty(classId.value);
+    if (!config) return;
+    const stakeholders = config.stakeholders.map(s => ({
+      account: bech32.encode('like', bech32.toWords(s.account)),
+      weight: s.weight.toNumber(),
+    }));
+    royaltyConfig.value = {
+      rateBasisPoints: config.rateBasisPoints.toNumber(),
+      stakeholders,
+    }
+  } catch (err) { // might not exists
+    console.error(err)
+  }
+}
+
+async function syncRoyaltyWithISCN() {
+  if (!wallet.value || !signer.value) {
+    await connect();
+  }
+  if (!wallet.value || !signer.value) return;
+  if (!iscnData.value) return;
+  const res = await signCreateRoyltyConfig(
+    classId.value,
+    iscnData.value.data,
+    iscnData.value.owner,
+    !!royaltyConfig.value,
+    signer.value,
+    wallet.value,
+  );
+  console.log(res);
+  await queryRoyalty();
+}
 
 async function queryWritingNFTListing(classId: string) {
   const res = await queryWritingNFTData(classId);
