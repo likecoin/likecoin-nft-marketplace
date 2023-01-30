@@ -44,11 +44,11 @@ export async function getQueryClient(): Promise<ISCNQueryClient> {
 
 export async function getCosmosQueryClient(): Promise<
   QueryClient &
-    ISCNExtension &
-    BankExtension &
-    AuthzExtension &
-    NFTExtension &
-    LikeNFTExtension
+  ISCNExtension &
+  BankExtension &
+  AuthzExtension &
+  NFTExtension &
+  LikeNFTExtension
 > {
   const c = await getQueryClient();
   const q = await c.getQueryClient();
@@ -146,8 +146,8 @@ export async function calcualteRoyaltyFromISCN(iscnData: ISCNRecordData, iscnOwn
     };
   });
   stakeholders.push({
-      account: LIKER_NFT_FEE_WALLET,
-      weight: feeAmount,
+    account: LIKER_NFT_FEE_WALLET,
+    weight: feeAmount,
   })
   return stakeholders;
 }
@@ -192,6 +192,42 @@ export async function signCreateNFTListing(
   return res as DeliverTxResponse;
 }
 
+export async function signUpdateNFTListing(
+  classId: string,
+  nftId: string,
+  price: number,
+  expirationInMs: number,
+  signer: OfflineSigner,
+  address: string
+) {
+  const signingClient = await getSigningClient();
+  await signingClient.connectWithSigner(RPC_URL, signer);
+  const res = await signingClient.updateNFTListing(
+    address,
+    classId,
+    nftId,
+    price,
+    expirationInMs
+  );
+  return res as DeliverTxResponse;
+}
+
+export async function signDeleteNFTListing(
+  classId: string,
+  nftId: string,
+  signer: OfflineSigner,
+  address: string
+) {
+  const signingClient = await getSigningClient();
+  await signingClient.connectWithSigner(RPC_URL, signer);
+  const res = await signingClient.deleteNFTListing(
+    address,
+    classId,
+    nftId
+  )
+  return res as DeliverTxResponse;
+}
+
 export async function signSendNFTs(
   targetAddresses: string[],
   classId: string,
@@ -232,7 +268,7 @@ export async function signCreateRoyltyConfig(
     let res: any;
     if (isUpdate) {
       res = signingClient.updateRoyaltyConfig(
-      address,
+        address,
         classId,
         {
           rateBasisPoints,
@@ -241,7 +277,7 @@ export async function signCreateRoyltyConfig(
       )
     } else {
       res = signingClient.createRoyaltyConfig(
-      address,
+        address,
         classId,
         {
           rateBasisPoints,
@@ -256,6 +292,7 @@ export async function signCreateRoyltyConfig(
     console.error(err);
   }
 }
+
 export async function getRecentListingEvents() {
   const { data } = await axios.get(
     `${LCD_URL}/cosmos/tx/v1beta1/txs?events=message.action%3D%27create_listing%27&pagination.limit=100&order_by=ORDER_BY_DESC`
@@ -285,12 +322,30 @@ export async function getRecentBuyNFTEvents() {
   return events;
 }
 
-export async function getNFTMarketplaceListing(creator: string) {
+export async function getNFTMarketplaceListing(
+  {
+    creator,
+    classId,
+    nftId,
+  }: {
+    creator?: string,
+    classId?: string,
+    nftId?: string,
+  }) {
   const items = [] as any[];
   let key = '';
   do {
     const { data } = await axios.get(
-      `${LCD_URL}/likechain/likenft/v1/marketplace?type=listing&creator=${creator}&pagination.key=${key}`
+      `${LCD_URL}/likechain/likenft/v1/marketplace`,
+      {
+        params: {
+          type: 'listing',
+          creator,
+          class_id: classId,
+          nft_id: nftId,
+          'pagination.key': key
+        },
+      }
     );
     key = data.pagination.next_key;
     if (data.items) {
