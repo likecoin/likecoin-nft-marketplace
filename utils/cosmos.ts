@@ -44,11 +44,11 @@ export async function getQueryClient(): Promise<ISCNQueryClient> {
 
 export async function getCosmosQueryClient(): Promise<
   QueryClient &
-    ISCNExtension &
-    BankExtension &
-    AuthzExtension &
-    NFTExtension &
-    LikeNFTExtension
+  ISCNExtension &
+  BankExtension &
+  AuthzExtension &
+  NFTExtension &
+  LikeNFTExtension
 > {
   const c = await getQueryClient();
   const q = await c.getQueryClient();
@@ -146,8 +146,8 @@ export async function calcualteRoyaltyFromISCN(iscnData: ISCNRecordData, iscnOwn
     };
   });
   stakeholders.push({
-      account: LIKER_NFT_FEE_WALLET,
-      weight: feeAmount,
+    account: LIKER_NFT_FEE_WALLET,
+    weight: feeAmount,
   })
   return stakeholders;
 }
@@ -268,7 +268,7 @@ export async function signCreateRoyltyConfig(
     let res: any;
     if (isUpdate) {
       res = signingClient.updateRoyaltyConfig(
-      address,
+        address,
         classId,
         {
           rateBasisPoints,
@@ -277,7 +277,7 @@ export async function signCreateRoyltyConfig(
       )
     } else {
       res = signingClient.createRoyaltyConfig(
-      address,
+        address,
         classId,
         {
           rateBasisPoints,
@@ -292,6 +292,7 @@ export async function signCreateRoyltyConfig(
     console.error(err);
   }
 }
+
 export async function getRecentListingEvents() {
   const { data } = await axios.get(
     `${LCD_URL}/cosmos/tx/v1beta1/txs?events=message.action%3D%27create_listing%27&pagination.limit=100&order_by=ORDER_BY_DESC`
