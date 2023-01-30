@@ -71,12 +71,24 @@ const { connect } = walletStore;
 const { lazyFetchClassMetadata, lazyFetchNFTMetadata } = metadataStore;
 
 onMounted(async () => {
-  classData.value = await lazyFetchClassMetadata(classId.value);
-  nftData.value = await lazyFetchNFTMetadata(classId.value, nftId.value);
-  const listing = await getNFTMarketplaceListing({ classId: classId.value, nftId: nftId.value });
+  const [
+    classRes,
+    nftRes,
+    listing,
+    purchaseRes,
+  ] = await Promise.all([
+    lazyFetchClassMetadata(classId.value),
+    lazyFetchNFTMetadata(classId.value, nftId.value),
+    getNFTMarketplaceListing({ classId: classId.value, nftId: nftId.value }),
+    queryWritingNFTData(classId.value),
+  ]);
+  classData.value = classRes;
+  nftData.value = nftRes;
   if (listing.length) {
     isListing.value = true;
     listingPrice.value = new BigNumber(listing[0].price).shiftedBy(-9).toNumber();
+  } else {
+    listingPrice.value = purchaseRes.price;
   }
 })
 
