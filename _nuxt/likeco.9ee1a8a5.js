@@ -1,0 +1,1 @@
+import{l as a,m as e}from"./cosmos.04f9d3c0.js";async function i(t){var s;try{return(await a.get(`${e}/likernft/purchase?class_id=${t}`)).data}catch(r){return((s=r.response)==null?void 0:s.status)!==404&&console.error(JSON.stringify(r)),null}}export{i as q};
