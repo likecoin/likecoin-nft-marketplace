@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>List NFT for sell</h1>
+    <h1>{{ isListing ? 'Edit NFT listing' : 'List NFT for sell' }}</h1>
     <table>
       <thead>
         <tr>
@@ -26,7 +26,7 @@
         </tr>
       </tbody>
     </table>
-    <form @submit.prevent="createNFTListing">
+    <form @submit.prevent="setNFTListing">
       <label for="listing-price">Price:</label>
       <input type="number" id="listing-price" v-model="listingPrice" /> LIKE
       <br />
@@ -36,10 +36,16 @@
       <br />
       <input type="submit" value="Confirm" />
     </form>
+    <div v-if="isListing">
+      <br />
+      <div>Cancel current listing:</div>
+      <button @click="deleteNFTListing()">Cancel</button>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import BigNumber from 'bignumber.js';
 import { storeToRefs } from 'pinia';
 import { useWalletStore } from '~/stores/wallet';
 import { useMetadataStore } from '~/stores/metadata';
@@ -54,6 +60,7 @@ const classData = ref({} as any);
 const nftData = ref({} as any);
 const listingPrice = ref(32);
 const listingExpiration = ref(new Date(Date.now() + 15552000000).toISOString().split('T')[0]);
+const isListing = ref(false);
 
 const maxExpirationValue = new Date(Date.now() + 15552000000).toISOString().split('T')[0];
 const minExpirationValue = new Date(Date.now()).toISOString().split('T')[0];
@@ -66,19 +73,37 @@ const { lazyFetchClassMetadata, lazyFetchNFTMetadata } = metadataStore;
 onMounted(async () => {
   classData.value = await lazyFetchClassMetadata(classId.value);
   nftData.value = await lazyFetchNFTMetadata(classId.value, nftId.value);
+  const listing = await getNFTMarketplaceListing({ classId: classId.value, nftId: nftId.value });
+  if (listing.length) {
+    isListing.value = true;
+    listingPrice.value = new BigNumber(listing[0].price).shiftedBy(-9).toNumber();
+  }
 })
 
 async function viewClassListings(classId: string) {
   router.push({ path: `/listings/${classId}` });
 }
 
-async function createNFTListing() {
+async function setNFTListing() {
   if (!wallet.value || !signer.value) {
     await connect();
   }
   if (!wallet.value || !signer.value) return;
   const expirationInMs = new Date(listingExpiration.value).getTime();
-  const res = await signCreateNFTListing(classId.value, nftId.value, listingPrice.value, expirationInMs, signer.value, wallet.value);
+  const action = isListing.value
+    ? signUpdateNFTListing(classId.value, nftId.value, listingPrice.value, expirationInMs, signer.value, wallet.value)
+    : signCreateNFTListing(classId.value, nftId.value, listingPrice.value, expirationInMs, signer.value, wallet.value);
+  const res = await action;
+  console.log(res);
+  viewClassListings(classId.value);
+}
+
+async function deleteNFTListing() {
+  if (!wallet.value || !signer.value) {
+    await connect();
+  }
+  if (!wallet.value || !signer.value) return;
+  const res = await signDeleteNFTListing(classId.value, nftId.value, signer.value, wallet.value);
   console.log(res);
   viewClassListings(classId.value);
 }

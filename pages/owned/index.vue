@@ -31,8 +31,10 @@
               <section v-if="item.price">
                 <div>{{ new BigNumber(item.price).shiftedBy(-9).toFixed() }}LIKE</div>
                 <div>till {{ item.expiration }}</div>
+                <button @click="goToSellPage(item.classId, item.id)">Edit</button>
+                <button @click="deleteNFTListing(item.classId, item.id)">Cancel</button>
               </section>
-              <button v-else @click="newNFTListing(item.classId, item.id)">Sell</button>
+              <button v-else @click="goToSellPage(item.classId, item.id)">Sell</button>
             </td>
           </tr>
         </tbody>
@@ -45,12 +47,12 @@
 import BigNumber from 'bignumber.js';
 import { storeToRefs } from 'pinia';
 import { useWalletStore } from '~/stores/wallet';
-import { queryOwnedNFTClasses } from '../../utils/cosmos';
+import { queryOwnedNFTClasses, signDeleteNFTListing } from '../../utils/cosmos';
 
 const router = useRouter();
 
 const store = useWalletStore();
-const { wallet } = storeToRefs(store);
+const { wallet, signer } = storeToRefs(store);
 const ownedMap = ref({} as any);
 
 onMounted(async () => {
@@ -80,7 +82,7 @@ async function fetchOwnedAndListingNFTs() {
     listingEvents
   ] = await Promise.all([
     queryOwnedNFTClasses(wallet.value),
-    getNFTMarketplaceListing(wallet.value),
+    getNFTMarketplaceListing({ creator: wallet.value}),
   ]);
   ownedList.forEach((n) => {
     ownedMap.value[makeKey(n.classId, n.id)] = n;
@@ -97,8 +99,18 @@ async function viewClassListings(classId: string) {
   router.push({ path: `/listings/${classId}` });
 }
 
-async function newNFTListing(classId: string, nftId: string) {
+async function goToSellPage(classId: string, nftId: string) {
   router.push({ path: `/sell/${classId}/${nftId}` });
+}
+
+async function deleteNFTListing(classId: string, nftId: string) {
+  if (!wallet.value || !signer.value) {
+    await connect();
+  }
+  if (!wallet.value || !signer.value) return;
+  const res = await signDeleteNFTListing(classId, nftId, signer.value, wallet.value);
+  console.log(res);
+  ownedMap.value[makeKey(classId, nftId)].price = null;
 }
 
 const ownedList = computed(() => Object.values<any>(ownedMap.value));
