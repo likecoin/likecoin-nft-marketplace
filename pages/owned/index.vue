@@ -111,6 +111,7 @@ async function deleteNFTListing(classId: string, nftId: string) {
   const res = await signDeleteNFTListing(classId, nftId, signer.value, wallet.value);
   console.log(res);
   ownedMap.value[makeKey(classId, nftId)].price = null;
+  ownedMap.value[makeKey(classId, nftId)].expiration = null;
 }
 
 const ownedList = computed(() => Object.values<any>(ownedMap.value));

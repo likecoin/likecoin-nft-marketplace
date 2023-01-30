@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h1>{{ isListing ? 'Edit NFT listing' : 'List NFT for sell' }}</h1>
+    <h1>{{ isEditMode ? 'Edit NFT listing' : 'List NFT for sell' }}</h1>
     <table>
       <thead>
         <tr>
@@ -36,7 +36,7 @@
       <br />
       <input type="submit" value="Confirm" />
     </form>
-    <div v-if="isListing">
+    <div v-if="isEditMode">
       <br />
       <div>Cancel current listing:</div>
       <button @click="deleteNFTListing()">Cancel</button>
@@ -60,7 +60,7 @@ const classData = ref({} as any);
 const nftData = ref({} as any);
 const listingPrice = ref(32);
 const listingExpiration = ref(new Date(Date.now() + 15552000000).toISOString().split('T')[0]);
-const isListing = ref(false);
+const isEditMode = ref(false);
 
 const maxExpirationValue = new Date(Date.now() + 15552000000).toISOString().split('T')[0];
 const minExpirationValue = new Date(Date.now()).toISOString().split('T')[0];
@@ -85,7 +85,7 @@ onMounted(async () => {
   classData.value = classRes;
   nftData.value = nftRes;
   if (listing.length) {
-    isListing.value = true;
+    isEditMode.value = true;
     listingPrice.value = new BigNumber(listing[0].price).shiftedBy(-9).toNumber();
   } else {
     listingPrice.value = purchaseRes.price;
@@ -102,7 +102,7 @@ async function setNFTListing() {
   }
   if (!wallet.value || !signer.value) return;
   const expirationInMs = new Date(listingExpiration.value).getTime();
-  const action = isListing.value
+  const action = isEditMode.value
     ? signUpdateNFTListing(classId.value, nftId.value, listingPrice.value, expirationInMs, signer.value, wallet.value)
     : signCreateNFTListing(classId.value, nftId.value, listingPrice.value, expirationInMs, signer.value, wallet.value);
   const res = await action;
