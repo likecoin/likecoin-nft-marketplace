@@ -82,7 +82,7 @@ async function fetchOwnedAndListingNFTs() {
     listingEvents
   ] = await Promise.all([
     queryOwnedNFTClasses(wallet.value),
-    getNFTMarketplaceListing({ creator: wallet.value}),
+    getNFTMarketplaceListing({ creator: wallet.value }),
   ]);
   ownedList.forEach((n) => {
     ownedMap.value[makeKey(n.classId, n.id)] = n;
@@ -110,9 +110,23 @@ async function deleteNFTListing(classId: string, nftId: string) {
   if (!wallet.value || !signer.value) return;
   const res = await signDeleteNFTListing(classId, nftId, signer.value, wallet.value);
   console.log(res);
-  ownedMap.value[makeKey(classId, nftId)].price = null;
-  ownedMap.value[makeKey(classId, nftId)].expiration = null;
+  const nft = ownedMap.value[makeKey(classId, nftId)];
+  nft.price = null;
+  nft.expiration = null;
 }
 
-const ownedList = computed(() => Object.values<any>(ownedMap.value));
+const ownedList = computed(() => Object.values<any>(ownedMap.value).sort(
+  (a, b) => {
+    if (a.price && b.price) {
+      const expA = Date.parse(a.expiration);
+      const expB = Date.parse(b.expiration);
+      if (expA < expB) return -1;
+      if (expA > expB) return 1;
+      return 0;
+    }
+    if (a.price) return -1; 
+    if (b.price) return 1; 
+    return 0;
+  }
+));
 </script>
