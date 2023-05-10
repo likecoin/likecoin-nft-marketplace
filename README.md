@@ -1,6 +1,9 @@
-# Nuxt 3 Minimal Starter
+# LikeCoin NFT Marketplace Minimal Web App
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+Mainnet: https://likecoin.github.io/likecoin-nft-marketplace
+Testnet: https://likecoin-nft-marketplace-testnet.netlify.app/
+
+A web app implementing [LikeCoin NFT module marketplace specification](https://docs.like.co/developer/likenft/likecoin-nft-module-spec). Allows user to list and sell their NFT on [LikeCoin chain](https://like.co)
 
 ## Setup
 
