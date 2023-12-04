@@ -1,1 +1,0 @@
-import{h as r}from"./cosmos.b994be90.js";import{f as a,o as n,c as s,t as p,j as l}from"./entry.62a6a47e.js";const _=["href"],m=a({__name:"UserLink",props:{wallet:{}},setup(e){const t=e;return(o,c)=>(n(),s("a",{href:`https://${l(r)}/${t.wallet}`,target:"_blank",rel:"noopener"},p(o.wallet),9,_))}});export{m as _};

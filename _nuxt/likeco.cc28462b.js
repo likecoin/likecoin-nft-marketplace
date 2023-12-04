@@ -1,1 +1,0 @@
-import{n as a,o as e}from"./cosmos.b994be90.js";async function i(t){var s;try{return(await a.get(`${e}/likernft/purchase?class_id=${t}`)).data}catch(r){return((s=r.response)==null?void 0:s.status)!==404&&console.error(JSON.stringify(r)),null}}export{i as q};
